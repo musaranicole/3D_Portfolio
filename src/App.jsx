@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -94,7 +94,6 @@ export function Experience() {
               color="#00eaff"
               transparent
               opacity={0.85}
-              // linewidth is ignored in many browsers; for thick lines use fat lines / Line2 libs.
             />
           </line>
         );
@@ -120,7 +119,7 @@ function HomePage() {
       }}>
         {/* Resume Button Top Right */}
         <div style={{ position: 'absolute', top: '40px', right: '60px', pointerEvents: 'auto' }}>
-          <a href="/resume" style={{ textDecoration: 'none' }}>
+          <Link to="/resume" style={{ textDecoration: 'none' }}>
             <button style={{
               background: 'transparent', color: '#ffffff', padding: '14px 35px',
               borderRadius: '8px', fontWeight: 'bold', border: '1px solid #ffffff',
@@ -131,7 +130,7 @@ function HomePage() {
             onMouseOut={e => { e.target.style.background = 'transparent'; e.target.style.color = '#ffffff'; e.target.style.transform = 'translateY(0)'; }}>
               VIEW RESUME
             </button>
-          </a>
+          </Link>
         </div>
 
         {/* Left side content */}
@@ -181,18 +180,19 @@ function HomePage() {
           </p>
 
           {/* View Work Button */}
-          <button onClick={() => window.location.href = '/projects'}
-                  style={{
-                    backgroundColor: 'transparent', color: '#00d4ff', padding: '18px 45px',
-                    borderRadius: '8px', fontWeight: 'bold', border: '2px solid #00d4ff',
-                    fontSize: '18px', cursor: 'pointer', letterSpacing: '2px', marginBottom: '40px',
-                    transition: 'all 0.4s ease'
-                  }}
-                  onMouseOver={e => { e.target.style.backgroundColor='#00d4ff'; e.target.style.color='#000'; e.target.style.transform='translateY(-3px)'; }}
-                  onMouseOut={e => { e.target.style.backgroundColor='transparent'; e.target.style.color='#00d4ff'; e.target.style.transform='translateY(0)'; }}
-          >
-            EXPLORE MY WORK →
-          </button>
+          <Link to="/projects" style={{ textDecoration: 'none' }}>
+            <button style={{
+              backgroundColor: 'transparent', color: '#00d4ff', padding: '18px 45px',
+              borderRadius: '8px', fontWeight: 'bold', border: '2px solid #00d4ff',
+              fontSize: '18px', cursor: 'pointer', letterSpacing: '2px', marginBottom: '40px',
+              transition: 'all 0.4s ease'
+            }}
+            onMouseOver={e => { e.target.style.backgroundColor='#00d4ff'; e.target.style.color='#000'; e.target.style.transform='translateY(-3px)'; }}
+            onMouseOut={e => { e.target.style.backgroundColor='transparent'; e.target.style.color='#00d4ff'; e.target.style.transform='translateY(0)'; }}
+            >
+              EXPLORE MY WORK →
+            </button>
+          </Link>
         </div>
       </div>
     </div>
@@ -233,17 +233,18 @@ function ProjectsPage() {
       minHeight: '100vh', background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
       color: '#e0e0e0', fontFamily: 'Times New Roman, serif', padding: '40px'
     }}>
-      <button onClick={() => window.history.back()}
-              style={{
-                background: 'transparent', color: '#00d4ff', border: '1px solid #00d4ff',
-                padding: '12px 30px', fontSize: '14px', cursor: 'pointer', borderRadius: '8px',
-                transition: 'all 0.3s ease', marginBottom: '40px'
-              }}
-              onMouseOver={e => { e.target.style.background='#00d4ff'; e.target.style.color='#000'; }}
-              onMouseOut={e => { e.target.style.background='transparent'; e.target.style.color='#00d4ff'; }}
-      >
-        ← BACK TO HOME
-      </button>
+      <Link to="/" style={{ textDecoration: 'none' }}>
+        <button style={{
+          background: 'transparent', color: '#00d4ff', border: '1px solid #00d4ff',
+          padding: '12px 30px', fontSize: '14px', cursor: 'pointer', borderRadius: '8px',
+          transition: 'all 0.3s ease', marginBottom: '40px'
+        }}
+        onMouseOver={e => { e.target.style.background='#00d4ff'; e.target.style.color='#000'; }}
+        onMouseOut={e => { e.target.style.background='transparent'; e.target.style.color='#00d4ff'; }}
+        >
+          ← BACK TO HOME
+        </button>
+      </Link>
 
       <h1 style={{ fontSize:'3.5rem', marginBottom:'4rem', textAlign:'center', background:'linear-gradient(45deg, #00d4ff, #8b5cf6, #ec4899)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent'}}>
         PROJECT PORTFOLIO
@@ -317,26 +318,27 @@ function ResumePage() {
       position: 'relative'
     }}>
       {/* Back Button */}
-      <button
-        onClick={() => window.history.back()}
-        style={{
-          position: 'absolute',
-          top: '40px',
-          left: '60px',
-          background: 'transparent',
-          color: '#00d4ff',
-          border: '1px solid #00d4ff',
-          padding: '12px 30px',
-          fontSize: '14px',
-          cursor: 'pointer',
-          borderRadius: '8px',
-          transition: 'all 0.3s ease'
-        }}
-        onMouseOver={(e) => { e.target.style.background = '#00d4ff'; e.target.style.color = '#000'; }}
-        onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#00d4ff'; }}
-      >
-        ← BACK TO HOME
-      </button>
+      <Link to="/" style={{ textDecoration: 'none' }}>
+        <button
+          style={{
+            position: 'absolute',
+            top: '40px',
+            left: '60px',
+            background: 'transparent',
+            color: '#00d4ff',
+            border: '1px solid #00d4ff',
+            padding: '12px 30px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            borderRadius: '8px',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseOver={(e) => { e.target.style.background = '#00d4ff'; e.target.style.color = '#000'; }}
+          onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#00d4ff'; }}
+        >
+          ← BACK TO HOME
+        </button>
+      </Link>
 
       {/* Download Button */}
       <a href={resumePath} download style={{ textDecoration: 'none' }}>
@@ -482,5 +484,3 @@ function App() {
 }
 
 export default App;
-
-

@@ -1,10 +1,28 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
-export function Experience() {
+function useViewport() {
+  const [width, setWidth] = useState(() =>
+    typeof window === "undefined" ? 1024 : window.innerWidth
+  );
+
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return {
+    width,
+    isMobile: width < 640,
+    isTablet: width >= 640 && width < 1024
+  };
+}
+
+export function Experience({ isMobile = false }) {
   const globeRef = useRef();
 
   // textures
@@ -67,7 +85,7 @@ export function Experience() {
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade />
 
       {/* Earth */}
-      <mesh ref={globeRef}>
+      <mesh ref={globeRef} scale={isMobile ? 0.82 : 1}>
         <sphereGeometry args={[2, 128, 128]} />
         <meshStandardMaterial
           map={earthTexture}
@@ -104,12 +122,21 @@ export function Experience() {
 
 // ---------------------- Home Page ----------------------
 function HomePage() {
+  const { isMobile, isTablet } = useViewport();
+
+  const topOffset = isMobile ? "16px" : "40px";
+  const sideOffset = isMobile ? "16px" : isTablet ? "28px" : "60px";
+  const headingSize = isMobile ? "34px" : isTablet ? "52px" : "72px";
+  const subtitleSize = isMobile ? "16px" : "20px";
+  const actionButtonPadding = isMobile ? "14px 22px" : "18px 45px";
+  const actionButtonFont = isMobile ? "15px" : "18px";
+
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#0a0a0a' }}>
-      <Canvas camera={{ fov: 45, near: 0.1, far: 1000, position: [0, 0, 5] }}
+    <div className="w-full h-screen overflow-x-hidden" style={{ position: 'relative', width: '100%', height: '100vh', background: '#0a0a0a' }}>
+      <Canvas camera={{ fov: isMobile ? 50 : 45, near: 0.1, far: 1000, position: isMobile ? [0, 0, 6.2] : [0, 0, 5] }}
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
         <color attach="background" args={['#0a0a0a']} />
-        <Experience />
+        <Experience isMobile={isMobile} />
       </Canvas>
 
       {/* UI Overlay */}
@@ -118,12 +145,12 @@ function HomePage() {
         pointerEvents: 'none', fontFamily: 'Times New Roman, serif'
       }}>
         {/* Resume Button Top Right */}
-        <div style={{ position: 'absolute', top: '40px', right: '60px', pointerEvents: 'auto' }}>
+        <div style={{ position: 'absolute', top: topOffset, right: sideOffset, pointerEvents: 'auto' }}>
           <Link to="/resume" style={{ textDecoration: 'none' }}>
             <button style={{
-              background: 'transparent', color: '#ffffff', padding: '14px 35px',
+              background: 'transparent', color: '#ffffff', padding: isMobile ? '10px 18px' : '14px 35px',
               borderRadius: '8px', fontWeight: 'bold', border: '1px solid #ffffff',
-              fontSize: '15px', cursor: 'pointer', fontFamily: 'Times New Roman, serif',
+              fontSize: isMobile ? '13px' : '15px', cursor: 'pointer', fontFamily: 'Times New Roman, serif',
               letterSpacing: '1.5px', transition: 'all 0.4s ease'
             }}
             onMouseOver={e => { e.target.style.background = '#ffffff'; e.target.style.color = '#000000'; e.target.style.transform = 'translateY(-2px)'; }}
@@ -135,17 +162,23 @@ function HomePage() {
 
         {/* Left side content */}
         <div style={{
-          position: 'absolute', bottom: '80px', left: '60px', color: '#e0e0e0', pointerEvents: 'auto'
+          position: 'absolute',
+          bottom: isMobile ? '24px' : '80px',
+          left: sideOffset,
+          right: isMobile ? sideOffset : 'auto',
+          color: '#e0e0e0',
+          pointerEvents: 'auto',
+          maxWidth: isMobile ? 'calc(100% - 32px)' : 'none'
         }}>
-          <h1 style={{ fontSize: '72px', fontWeight: 'normal', marginBottom: '10px', color: '#ffffff', letterSpacing: '2px' }}>
+          <h1 style={{ fontSize: headingSize, fontWeight: 'normal', marginBottom: '10px', color: '#ffffff', letterSpacing: isMobile ? '1px' : '2px', lineHeight: isMobile ? '1.1' : 'normal' }}>
             NICOLE MUSARA
           </h1>
 
           {/* Social Icons */}
-          <div style={{ display: 'flex', gap: '25px', marginTop: '30px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '14px' : '25px', marginTop: isMobile ? '16px' : '30px', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://www.linkedin.com/in/nicole-musara-362a60288/" target="_blank" rel="noopener noreferrer">
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg"
-                   alt="LinkedIn" width="34"
+                   alt="LinkedIn" width={isMobile ? "28" : "34"}
                    style={{ filter: "drop-shadow(0 0 6px #0077B5)", transition: "0.3s ease" }}
                    onMouseOver={e => e.currentTarget.style.transform="scale(1.15)"}
                    onMouseOut={e => e.currentTarget.style.transform="scale(1)"}
@@ -153,21 +186,21 @@ function HomePage() {
             </a>
             <a href="https://github.com/musaranicole" target="_blank" rel="noopener noreferrer">
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"
-                   alt="GitHub" width="34"
+                   alt="GitHub" width={isMobile ? "28" : "34"}
                    style={{ filter: "invert(1) drop-shadow(0 0 6px #ffffff)", transition: "0.3s ease" }}
                    onMouseOver={e => e.currentTarget.style.transform="scale(1.15)"}
                    onMouseOut={e => e.currentTarget.style.transform="scale(1)"}
               />
             </a>
             <a href="https://www.kaggle.com/nicolemusara" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/npm/simple-icons@v6/icons/kaggle.svg" alt="Kaggle" width="34"
+              <img src="https://cdn.jsdelivr.net/npm/simple-icons@v6/icons/kaggle.svg" alt="Kaggle" width={isMobile ? "28" : "34"}
                    style={{ filter: "invert(1) sepia(1) saturate(10) hue-rotate(170deg) drop-shadow(0 0 6px #20BEFF)", transition: "0.3s ease" }}
                    onMouseOver={e => e.currentTarget.style.transform="scale(1.15)"}
                    onMouseOut={e => e.currentTarget.style.transform="scale(1)"}
               />
             </a>
             <a href="mailto:nicolemusara30@gmail.com">
-              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/gmail.svg" alt="Email" width="34"
+              <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/gmail.svg" alt="Email" width={isMobile ? "28" : "34"}
                    style={{ filter: "invert(1) sepia(1) saturate(10) hue-rotate(-10deg) drop-shadow(0 0 6px #EA4335)", transition: "0.3s ease" }}
                    onMouseOver={e => e.currentTarget.style.transform="scale(1.15)"}
                    onMouseOut={e => e.currentTarget.style.transform="scale(1)"}
@@ -175,16 +208,17 @@ function HomePage() {
             </a>
           </div>
 
-          <p style={{ fontSize: '20px', color: '#a0a0a0', marginBottom: '40px', fontStyle: 'italic' }}>
-            Systems Engineer, FullStack Developer & Data Scientist
+          <p style={{ fontSize: subtitleSize, color: '#a0a0a0', marginBottom: isMobile ? '20px' : '40px', marginTop: isMobile ? '10px' : '0px', fontStyle: 'italic' }}>
+            Systems Engineer | AI & Machine Learning | Cloud Computing
           </p>
 
           {/* View Work Button */}
           <Link to="/projects" style={{ textDecoration: 'none' }}>
             <button style={{
-              backgroundColor: 'transparent', color: '#00d4ff', padding: '18px 45px',
+              backgroundColor: 'transparent', color: '#00d4ff',
               borderRadius: '8px', fontWeight: 'bold', border: '2px solid #00d4ff',
-              fontSize: '18px', cursor: 'pointer', letterSpacing: '2px', marginBottom: '40px',
+              fontSize: actionButtonFont, cursor: 'pointer', letterSpacing: isMobile ? '1px' : '2px', marginBottom: isMobile ? '0px' : '40px',
+              padding: actionButtonPadding,
               transition: 'all 0.4s ease'
             }}
             onMouseOver={e => { e.target.style.backgroundColor='#00d4ff'; e.target.style.color='#000'; e.target.style.transform='translateY(-3px)'; }}
@@ -201,6 +235,8 @@ function HomePage() {
 
 // ---------------------- Projects Page ----------------------
 function ProjectsPage() {
+  const { isMobile, isTablet } = useViewport();
+
   const projects = [
     {
       title: "AI CLUSTER",
@@ -229,14 +265,14 @@ function ProjectsPage() {
   ];
 
   return (
-    <div style={{
+    <div className="w-full overflow-x-hidden px-4 sm:px-6 md:px-10 lg:px-10 xl:px-10 py-6 sm:py-8 md:py-10 xl:py-10" style={{
       minHeight: '100vh', background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-      color: '#e0e0e0', fontFamily: 'Times New Roman, serif', padding: '40px'
+      color: '#e0e0e0', fontFamily: 'Times New Roman, serif'
     }}>
       <Link to="/" style={{ textDecoration: 'none' }}>
         <button style={{
           background: 'transparent', color: '#00d4ff', border: '1px solid #00d4ff',
-          padding: '12px 30px', fontSize: '14px', cursor: 'pointer', borderRadius: '8px',
+          padding: isMobile ? '10px 16px' : '12px 30px', fontSize: isMobile ? '12px' : '14px', cursor: 'pointer', borderRadius: '8px',
           transition: 'all 0.3s ease', marginBottom: '40px'
         }}
         onMouseOver={e => { e.target.style.background='#00d4ff'; e.target.style.color='#000'; }}
@@ -246,11 +282,11 @@ function ProjectsPage() {
         </button>
       </Link>
 
-      <h1 style={{ fontSize:'3.5rem', marginBottom:'4rem', textAlign:'center', background:'linear-gradient(45deg, #00d4ff, #8b5cf6, #ec4899)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent'}}>
+      <h1 style={{ fontSize: isMobile ? '2rem' : isTablet ? '2.6rem' : '3.5rem', marginBottom: isMobile ? '2rem' : '4rem', textAlign:'center', background:'linear-gradient(45deg, #00d4ff, #8b5cf6, #ec4899)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent'}}>
         PROJECT PORTFOLIO
       </h1>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(500px, 1fr))', gap:'3rem' }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(500px, 1fr))', gap: isMobile ? '1.25rem' : '3rem' }}>
         {projects.map((project, idx) => (
           <div key={idx} style={{
             background:'rgba(255,255,255,0.05)', borderRadius:'25px', overflow:'hidden',
@@ -259,13 +295,13 @@ function ProjectsPage() {
                onMouseOver={e => { e.currentTarget.style.transform='translateY(-10px)'; e.currentTarget.style.borderColor='rgba(0,212,255,0.3)'; e.currentTarget.style.boxShadow='0 20px 40px rgba(0,212,255,0.1)'; }}
                onMouseOut={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow='none'; }}
           >
-            <div style={{ height:'280px', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', background:'#1a1a1a' }}>
+            <div style={{ height: isMobile ? '220px' : '280px', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden', background:'#1a1a1a' }}>
               <img src={project.images[0]} alt={project.title} style={{ width:'100%', height:'100%', objectFit:'cover' }} onError={e=>e.target.style.display='none'} />
             </div>
 
-            <div style={{ padding:'2.5rem' }}>
-              <h2 style={{ fontSize:'1.8rem', marginBottom:'1rem', color:'#ffffff', fontWeight:'600' }}>{project.title}</h2>
-              <p style={{ color:'#a0a0a0', marginBottom:'1.5rem', lineHeight:'1.7', fontSize:'1rem' }}>{project.description}</p>
+            <div style={{ padding: isMobile ? '1rem' : '2.5rem' }}>
+              <h2 style={{ fontSize: isMobile ? '1.3rem' : '1.8rem', marginBottom:'1rem', color:'#ffffff', fontWeight:'600' }}>{project.title}</h2>
+              <p style={{ color:'#a0a0a0', marginBottom:'1.5rem', lineHeight:'1.7', fontSize: isMobile ? '0.95rem' : '1rem' }}>{project.description}</p>
 
               <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom:'2rem' }}>
                 {project.tech.map((tech, tIdx) => (
@@ -276,9 +312,9 @@ function ProjectsPage() {
                 ))}
               </div>
 
-              <div style={{ display:'flex', gap:'1rem' }}>
+              <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', gap:'1rem' }}>
                 <a href={project.liveLink} target="_blank" rel="noopener noreferrer" style={{
-                  background:'#00d4ff', color:'#000', padding:'1rem 2rem', fontSize:'0.9rem',
+                  background:'#00d4ff', color:'#000', padding: isMobile ? '0.8rem 1rem' : '1rem 2rem', fontSize:'0.9rem',
                   textDecoration:'none', borderRadius:'12px', fontWeight:'600', flex:1, textAlign:'center', transition:'all 0.3s ease'
                 }}
                    onMouseOver={e=>{ e.currentTarget.style.background='#fff'; e.currentTarget.style.transform='translateY(-2px)'; }}
@@ -287,7 +323,7 @@ function ProjectsPage() {
                   LIVE DEMO
                 </a>
                 <a href={project.githubLink} target="_blank" rel="noopener noreferrer" style={{
-                  background:'transparent', color:'#fff', border:'2px solid #fff', padding:'1rem 2rem',
+                  background:'transparent', color:'#fff', border:'2px solid #fff', padding: isMobile ? '0.8rem 1rem' : '1rem 2rem',
                   fontSize:'0.9rem', textDecoration:'none', borderRadius:'12px', fontWeight:'600', flex:1, textAlign:'center', transition:'all 0.3s ease'
                 }}
                    onMouseOver={e=>{ e.currentTarget.style.background='#fff'; e.currentTarget.style.color='#000'; e.currentTarget.style.transform='translateY(-2px)'; }}
@@ -305,33 +341,35 @@ function ProjectsPage() {
 }
 
 function ResumePage() {
+  const { isMobile, isTablet } = useViewport();
+
   // Path to your PDF in the public folder
   const resumePath = "/Nicole Musara- Systems Engineer Resume.pdf";
 
   return (
-    <div style={{
+    <div className="w-full overflow-x-hidden px-4 sm:px-6 md:px-10 lg:px-20 xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-16" style={{
       minHeight: '100vh',
       backgroundColor: '#0a0a0a',
       color: '#e0e0e0',
       fontFamily: 'Times New Roman, serif',
-      padding: '60px 80px',
       position: 'relative'
     }}>
       {/* Back Button */}
       <Link to="/" style={{ textDecoration: 'none' }}>
         <button
           style={{
-            position: 'absolute',
-            top: '40px',
-            left: '60px',
+            position: isMobile ? 'static' : 'absolute',
+            top: isMobile ? 'auto' : '40px',
+            left: isMobile ? 'auto' : '60px',
             background: 'transparent',
             color: '#00d4ff',
             border: '1px solid #00d4ff',
-            padding: '12px 30px',
-            fontSize: '14px',
+            padding: isMobile ? '10px 16px' : '12px 30px',
+            fontSize: isMobile ? '12px' : '14px',
             cursor: 'pointer',
             borderRadius: '8px',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            marginBottom: isMobile ? '12px' : '0px'
           }}
           onMouseOver={(e) => { e.target.style.background = '#00d4ff'; e.target.style.color = '#000'; }}
           onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#00d4ff'; }}
@@ -341,20 +379,21 @@ function ResumePage() {
       </Link>
 
       {/* Download Button */}
-      <a href={resumePath} download style={{ textDecoration: 'none' }}>
+      <a href={resumePath} download style={{ textDecoration: 'none', display: isMobile ? 'inline-block' : 'inline' }}>
         <button style={{
-          position: 'absolute',
-          top: '40px',
-          right: '60px',
+          position: isMobile ? 'static' : 'absolute',
+          top: isMobile ? 'auto' : '40px',
+          right: isMobile ? 'auto' : '60px',
           backgroundColor: '#00d4ff',
           color: '#000000',
-          padding: '14px 35px',
+          padding: isMobile ? '10px 16px' : '14px 35px',
           borderRadius: '8px',
           fontWeight: 'bold',
           border: 'none',
-          fontSize: '16px',
+          fontSize: isMobile ? '13px' : '16px',
           cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          marginBottom: isMobile ? '16px' : '0px'
         }}
           onMouseOver={(e) => { e.target.style.background = '#ffffff'; e.target.style.color = '#000'; e.target.style.transform = 'translateY(-2px)'; }}
           onMouseOut={(e) => { e.target.style.background = '#00d4ff'; e.target.style.color = '#000'; e.target.style.transform = 'translateY(0)'; }}
@@ -364,9 +403,9 @@ function ResumePage() {
       </a>
 
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? '24px' : '40px', marginTop: isMobile ? '10px' : '0px' }}>
         <h1 style={{
-          fontSize: '3rem',
+          fontSize: isMobile ? '2rem' : isTablet ? '2.5rem' : '3rem',
           fontWeight: 'bold',
           background: 'linear-gradient(45deg, #00d4ff, #8b5cf6, #ec4899)',
           WebkitBackgroundClip: 'text',
@@ -374,24 +413,24 @@ function ResumePage() {
         }}>
           NICOLE MUSARA
         </h1>
-        <p style={{ fontSize: '1.5rem', color: '#a0a0a0', marginTop: '5px' }}>
+        <p style={{ fontSize: isMobile ? '1.1rem' : '1.5rem', color: '#a0a0a0', marginTop: '5px' }}>
           Systems Engineer
         </p>
       </div>
 
       {/* Resume Content */}
-      <div style={{ maxWidth: '900px', margin: '0 auto', lineHeight: '1.6' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', lineHeight: '1.6', fontSize: isMobile ? '0.95rem' : '1rem', overflowWrap: 'anywhere' }}>
         <h2 style={{ fontSize: '1.8rem', color: '#00d4ff', marginBottom: '10px' }}>PROFILE</h2>
         <p>
-          Results-oriented IT professional with expertise in High Performance Computing, Cloud Infrastructure, and Network Systems, currently serving as a Systems Engineer and Business Development Officer at ZCHPC. I play a key role in HPC cloud deployment, infrastructure optimization, and capacity expansion initiatives, while driving client acquisition, onboarding, and technical solution alignment.
+          Business Solutions Engineer and Systems Engineer specializing in AI-driven infrastructure, High Performance Computing (HPC), and Cloud Platforms. Experienced in designing and managing scalable computing environments that support machine learning workflows, data-intensive research, and enterprise cloud applications.
         </p>
         <p>
-          I am deeply passionate about architecting advanced computing environments that power AI research, scientific computing, and data-intensive enterprise applications. My strength lies in combining technical execution with strategic thinking, delivering reliable systems, improving operational efficiency, and enabling technology adoption across institutions. Known for strong analytical abilities, effective communication, and the ability to drive complex technical projects from concept to deployment.
+          Strong foundation in systems-level engineering and performance-oriented computing. Skilled in translating business and institutional requirements into scalable, secure, and high-performance technical solutions, optimizing distributed computing environments, and aligning infrastructure with AI and data science objectives.
         </p>
 
         <h2 style={{ fontSize: '1.8rem', color: '#00d4ff', marginBottom: '10px' }}>EXPERIENCE</h2>
 
-        <h3 style={{ fontWeight: 'bold' }}>SYSTEMS ENGINEER & BUSINESS DEVELOPMENT OFFICER</h3>
+        <h3 style={{ fontWeight: 'bold' }}>BUSINESS SOLUTIONS ENGINEER & SYSTEMS ENGINEER</h3>
         <p>ZIMBABWE CENTRE FOR HIGH PERFORMANCE COMPUTING (ZCHPC) | NOVEMBER 2025-PRESENT | HARARE, ZIMBABWE</p>
         <ul>
           <li>Design, deploy, and manage HPC and cloud infrastructure supporting AI training, scientific research, and enterprise workloads.</li>
@@ -436,22 +475,39 @@ function ResumePage() {
         </ul>
 
         <h2 style={{ fontSize: '1.8rem', color: '#00d4ff', marginBottom: '10px' }}>SKILLS</h2>
+        <h3 style={{ fontWeight: 'bold' }}>AI & Data Infrastructure</h3>
         <ul>
-          <li>Linux Server Administration (Ubuntu, CentOS), Windows Server</li>
           <li>HPC & AI Cluster Development and Management</li>
+          <li>Data Analytics & Visualization (Pandas, NumPy, Matplotlib, Power BI, Tableau)</li>
+          <li>Machine Learning & AI Workflows (scikit-learn, TensorFlow basics)</li>
+        </ul>
+
+        <h3 style={{ fontWeight: 'bold' }}>Cloud & Virtualization</h3>
+        <ul>
           <li>Virtualization (VMware, Hyper-V, Proxmox)</li>
           <li>Microsoft Azure | AWS (Exposure)</li>
           <li>Docker | Kubernetes</li>
+        </ul>
+
+        <h3 style={{ fontWeight: 'bold' }}>Systems & Networking</h3>
+        <ul>
+          <li>Linux Server Administration (Ubuntu, CentOS), Windows Server</li>
           <li>TCP/IP | LAN/WAN | DHCP | DNS</li>
           <li>Network Troubleshooting</li>
-          <li>Firewall & VPN | Cybersecurity Fundamentals</li>
-          <li>Backup & Disaster Recovery</li>
+          <li>Hardware & Systems Troubleshooting</li>
+        </ul>
+
+        <h3 style={{ fontWeight: 'bold' }}>Programming & Databases</h3>
+        <ul>
           <li>Python | Bash Scripting | R</li>
           <li>SQL (MySQL, SQL Server, PostgreSQL) | NoSQL (MongoDB, Cassandra)</li>
-          <li>Data Analytics & Visualization (Pandas, NumPy, Matplotlib, Power BI, Tableau)</li>
-          <li>Machine Learning & AI Workflows (scikit-learn, TensorFlow basics)</li>
+        </ul>
+
+        <h3 style={{ fontWeight: 'bold' }}>Security & Reliability</h3>
+        <ul>
+          <li>Firewall & VPN | Cybersecurity Fundamentals</li>
+          <li>Backup & Disaster Recovery</li>
           <li>System Monitoring & Performance Optimization</li>
-          <li>Hardware & Systems Troubleshooting</li>
         </ul>
 
         <h2 style={{ fontSize: '1.8rem', color: '#00d4ff', marginBottom: '10px' }}>AWARDS</h2>
